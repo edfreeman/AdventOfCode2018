@@ -11,19 +11,20 @@ namespace Day02
     {
         static void Main(string[] args)
         {
-            string[] testInput = { "abcdef", "bababc", "abbcde", "abcccd", "aabcdd", "abcdee", "ababab" };
-            Debug.Assert(CalculateChecksumPart1(testInput) == 12);
+            //Part 1
+            string[] testInputPart1 = { "abcdef", "bababc", "abbcde", "abcccd", "aabcdd", "abcdee", "ababab" };
+            Debug.Assert(CalculateChecksumPart1(testInputPart1) == 12);
 
             string input = "C:/_Projects/Training/AdventOfCode/2018/Day02/input.txt";
             string[] myList = File.ReadAllLines(input);
 
-            var myarray = new char[2];
-
-            foreach (var item in myarray)
-            {
-                Console.WriteLine(item == '\0');
-            }
             Console.WriteLine(CalculateChecksumPart1(myList));
+
+            //Part 2
+            string[] testInputPart2 = { "abcde", "fghij", "klmno", "pqrst", "fguij", "axcye", "wvxyz" };
+            Debug.Assert(FindCommonLetters(testInputPart2) == "fgij");
+
+            Console.WriteLine(FindCommonLetters(myList));
         }
 
         static int CalculateChecksumPart1(string[] input)
@@ -56,9 +57,8 @@ namespace Day02
         static string FindCommonLetters(string[] input)
         {
             int j = 0;
-
             int inputLength = input.Length;
-            char[] commonLetters = new char[input.Length - 1];
+            char[] commonLetters = new char[input[0].Length - 1];
 
             foreach(var id1 in input)
             {
@@ -72,6 +72,7 @@ namespace Day02
                     {
                         if (mismatches > 1)
                         {
+                            j = 0;
                             break;
                         }
                         if (id2[i] != id1[i])
@@ -79,19 +80,21 @@ namespace Day02
                             mismatches++;
                             continue;
                         }
-                        else
+                        if (id2[i] == id1[i])
                         {
                             commonLetters[j] = id2[i];
                             j++;
                         }
+                        if (!commonLetters.Contains('\0'))
+                        {
+                            var sbuilder = new StringBuilder();
+                            var fullString = sbuilder.Append(commonLetters).ToString();
+                            return fullString;
+                        }
                     }
                 }
             }
-
-
-
-
-            return "";
+            return null;
         }
     }
 }
