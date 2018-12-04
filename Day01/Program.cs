@@ -21,6 +21,8 @@ namespace Day01
 
             var myListAsInts = myList.Select(x => int.Parse(x));
 
+            var myListAsInts2 = myListAsInts.ToList();
+
             Console.WriteLine(CalculateFrequency(myListAsInts));
 
             //Part 2
@@ -30,7 +32,15 @@ namespace Day01
             Debug.Assert(CalculateFrequencyPart2(new int[] { -6, 3, 8, 5, -6 }) == 5);
             Debug.Assert(CalculateFrequencyPart2(new int[] { 7, 7, -2, -7, -4 }) == 14);
 
-            Console.WriteLine(CalculateFrequencyPart2(myListAsInts));
+
+
+            var stopwatch = new Stopwatch();
+
+            stopwatch.Start();
+            Console.WriteLine(CalculateFrequencyPart2(myListAsInts2));
+            stopwatch.Stop();
+
+            Console.WriteLine($"Time taken: {stopwatch.Elapsed}");
         }
 
         static int CalculateFrequency(IEnumerable<int> values)
@@ -38,7 +48,7 @@ namespace Day01
             return values.Sum();
         }
 
-        static int? CalculateFrequencyPart2(IEnumerable<int> values)
+        static int? CalculateFrequencyPart2(IList<int> values)
         {
             var runningFrequency = new List<int>() {0};
             bool valueReachedTwice = false;
@@ -49,15 +59,15 @@ namespace Day01
 
             while (!valueReachedTwice)
             {
-                currentSum += values.ElementAt(i % listCount);
-                runningFrequency.Add(currentSum);
+                currentSum += values[(i % listCount)];
 
-                if (runningFrequency.Count(x => x == currentSum) > 1)
+                if (runningFrequency.Contains(currentSum))
                 {
                     valueReachedTwice = true;
-                    return runningFrequency.Last();
+                    return currentSum;
                 }
-                
+
+                runningFrequency.Add(currentSum);
                 i++;
             }
 
