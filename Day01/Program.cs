@@ -37,8 +37,10 @@ namespace Day01
             var stopwatch = new Stopwatch();
 
             stopwatch.Start();
-            Console.WriteLine(CalculateFrequencyPart2(myListAsInts2));
+            var answer = CalculateFrequencyPart2(myListAsInts2);
             stopwatch.Stop();
+
+            Console.WriteLine("Day01 Part 2 answer: " + answer);
 
             Console.WriteLine($"Time taken: {stopwatch.Elapsed}");
         }
