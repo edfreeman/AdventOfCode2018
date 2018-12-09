@@ -13,6 +13,7 @@ namespace Day03
         int Y { get; set; }
         int Width { get; set; }
         int Height { get; set; }
+        public (int X, int Y)[] Coords { get; set; }
 
         public Claim(string claim)
         {
@@ -24,8 +25,8 @@ namespace Day03
             Width =     int.Parse(claimParts[3]);
             Height =    int.Parse(claimParts[4]);
         }
-
-        public void ApplyToFabric(Dictionary<(int X, int Y), int> fabric)
+                
+        public void ApplyToFabric(Dictionary<(int X, int Y), (int ct, List<int> ids)> fabric)
         {
             var points = Enumerable
                 .Range(0, Width)
@@ -33,15 +34,20 @@ namespace Day03
                     .Range(0, Height)
                     .Select(j => (X: i + X, Y: j + Y)));
 
+            Coords = points.ToArray();
+            
             foreach (var point in points)
             {
-                if (fabric.TryGetValue(point, out int currentClaimCount))
+                if (fabric.TryGetValue(point, out (int ct, List<int> ids) claimsCoveringPoint))
                 {
-                    fabric[point] = currentClaimCount + 1;
+                    claimsCoveringPoint.ct++;
+                    claimsCoveringPoint.ids.Add(Id);
+                    fabric[point] = claimsCoveringPoint;
+                    //fabric[point] = (claimsCoveringPoint.count + 1, claimsCoveringPoint.ids);//claimsCoveringPoint.count + 1;
                 }
                 else
                 {
-                    fabric.Add(point, 1);
+                    fabric.Add(point, (1, new List<int>() { Id }));
                 }
             }
         }
