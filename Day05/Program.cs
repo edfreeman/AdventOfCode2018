@@ -10,6 +10,10 @@ namespace Day05
     {
         static void Main(string[] args)
         {
+            string myInput = File.ReadAllText(@"C:\_Projects\Training\AdventOfCode\2018\Day05\input.txt").Trim();
+
+            //Part 1
+
             Debug.Assert(CalculateRemainingUnits("aabAAB") == 6);
             Debug.Assert(CalculateRemainingUnits("aA") == 0);
             Debug.Assert(CalculateRemainingUnits("aAb") == 1);
@@ -17,15 +21,13 @@ namespace Day05
             Debug.Assert(CalculateRemainingUnits("abAB") == 4);
             Debug.Assert(CalculateRemainingUnits("aabAAB") == 6);
             Debug.Assert(CalculateRemainingUnits("dabAcCaCBAcCcaDA") == 10);
+            
+            Console.WriteLine("Answer to part 1: "+ CalculateRemainingUnits(myInput));
 
-            string myInput = File.ReadAllText(@"C:\_Projects\Training\AdventOfCode\2018\Day05\input.txt").Trim();
+            //Part 2 - works but takes a while
+            Debug.Assert(OptimalCharacterRemovalRemainingUnitsLength("dabAcCaCBAcCcaDA") == 4);
 
-            Console.WriteLine(CalculateRemainingUnits(myInput));
-
-            var myString = "aacccAAACCC";
-            Console.WriteLine(myString.Replace("a", "", true, System.Globalization.CultureInfo.InvariantCulture));
-
-
+            Console.WriteLine("Answer to part 2: " + OptimalCharacterRemovalRemainingUnitsLength(myInput));
         }
 
         static string ApplyReactions(string input)
@@ -62,13 +64,20 @@ namespace Day05
             return length;
         }
 
-        //static int OptimalCharacterRemovalRemainingUnitsLength(string input)
-        //{
-        //    var distinctCharacters = input.ToUpperInvariant().Distinct().ToList();
+        static int OptimalCharacterRemovalRemainingUnitsLength(string input)
+        {
+            var distinctCharacters = input.ToUpperInvariant().Distinct();
+            var distinctCharactersAsStrings = distinctCharacters.Select(x => x.ToString());
+            var listOfLengths = new List<int>();
+            
+            foreach (var distinctCharacter in distinctCharactersAsStrings)
+            {
+                string output = input.Replace(distinctCharacter, "", true, System.Globalization.CultureInfo.InvariantCulture);
 
-        //    distinctCharacters.Remove();
+                listOfLengths.Add(CalculateRemainingUnits(output));
+            }
 
-        //    foreach(distinct)
-        //}
+            return listOfLengths.Min();
+        }
     }
 }
