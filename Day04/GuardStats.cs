@@ -9,10 +9,7 @@ namespace Day04
     class GuardStats
     {
         public int Id { get; set; }
-        public int MinutesAsleep { get; set; }
-        public (int? minute, int? frequency) FavouriteMinute { get; set; }
         SortedDictionary<DateTime, string> Records { get; set; }
-        List<Dictionary<string, List<DateTime>>> Shifts { get; set; }
 
         public GuardStats(KeyValuePair<int, SortedDictionary<DateTime, string>> guardRecords)
         {
@@ -20,7 +17,7 @@ namespace Day04
             Records = guardRecords.Value;
         }
 
-        public void GenerateShifts()
+        public List<Dictionary<string, List<DateTime>>> GenerateShifts()
         {
             var shifts = new List<Dictionary<string, List<DateTime>>>();
 
@@ -59,19 +56,21 @@ namespace Day04
                     }
                 }                
             }
-            Shifts = shifts;
+            return shifts;
         }
 
         public int CalculateMinutesAsleep()
         {
-            GenerateShifts();
+            List<Dictionary<string, List<DateTime>>> shifts = GenerateShifts();
 
-            if(!Shifts.Any(shift => shift.Keys.Contains("Falls asleep")))
+            var minutesAsleep = 0;
+
+            if(!shifts.Any(shift => shift.Keys.Contains("Falls asleep")))
             {
-                return MinutesAsleep = 0;
+                return 0;
             }
 
-            foreach(var shift in Shifts)
+            foreach(var shift in shifts)
             {
                 DateTime shiftStart = shift["Shift start"][0];
                 int numberOfSnoozes = shift["Falls asleep"].Count;
@@ -80,18 +79,21 @@ namespace Day04
                 {
                     TimeSpan snoozePeriod = shift["Wakes up"][i].Subtract(shift["Falls asleep"][i]);
                     
-                    MinutesAsleep += (int)snoozePeriod.TotalMinutes;
+                    minutesAsleep += (int)snoozePeriod.TotalMinutes;
                 }
             }
 
-            return MinutesAsleep;
+            return minutesAsleep;
         }
 
-        public (int?, int?) FindFavouriteMinute()
+        public (int? minute, int? frequency) FindFavouriteMinute()
         {
-            if (!Shifts.Any(shift => shift.Keys.Contains("Falls asleep")))
+            (int?, int?) favouriteMinuteAndFrequency = (null, null);
+            List<Dictionary<string, List<DateTime>>> shifts = GenerateShifts();
+
+            if (!shifts.Any(shift => shift.Keys.Contains("Falls asleep")))
             {
-                return FavouriteMinute = (null, null);
+                return (null, null);
             }
 
             var minuteCounts = new Dictionary<int, int>();
@@ -101,7 +103,7 @@ namespace Day04
                 minuteCounts.Add(i, 0);
             }
 
-            foreach(var shift in Shifts)
+            foreach(var shift in shifts)
             {
                 int numberOfSnoozes = shift["Falls asleep"].Count;
 
@@ -118,11 +120,11 @@ namespace Day04
                 }
             }
 
-            var favouriteMinute = minuteCounts.OrderByDescending(minute => minute.Value).First();
+            var favouriteMinute = minuteCounts.MaxBy(minute => minute.Value).First();
 
-            FavouriteMinute = (favouriteMinute.Key, favouriteMinute.Value);
+            favouriteMinuteAndFrequency = (favouriteMinute.Key, favouriteMinute.Value);
 
-            return FavouriteMinute;
+            return favouriteMinuteAndFrequency;
         }
     }
 }

@@ -22,25 +22,22 @@ namespace Day04
             {
                 var guardStats = new GuardStats(guard);
 
-                guardStats.CalculateMinutesAsleep();
-                guardStats.FindFavouriteMinute();
-
                 allGuardStats.Add(guardStats);
             }
 
             //Part 1
 
-            GuardStats sleepiestGuard = allGuardStats.OrderByDescending(guard => guard.MinutesAsleep).First();
+            GuardStats sleepiestGuard = allGuardStats.MaxBy(guard => guard.CalculateMinutesAsleep()).First();
 
-            int day04Part1Answer = sleepiestGuard.Id * (int)sleepiestGuard.FavouriteMinute.minute;
+            int day04Part1Answer = sleepiestGuard.Id * (int)sleepiestGuard.FindFavouriteMinute().minute;
 
             Console.WriteLine("Answer to day 4 part 1: " + day04Part1Answer);
 
             //Part 2
 
-            GuardStats mostConsistentGuard = allGuardStats.OrderByDescending(guard => guard.FavouriteMinute.frequency).First();
+            GuardStats mostConsistentGuard = allGuardStats.MaxBy(guard => guard.FindFavouriteMinute().frequency).First();
 
-            int day04Part2Answer = mostConsistentGuard.Id * (int)mostConsistentGuard.FavouriteMinute.minute;
+            int day04Part2Answer = mostConsistentGuard.Id * (int)mostConsistentGuard.FindFavouriteMinute().minute;
 
             Console.WriteLine("Answer to day 4 part 2: " + day04Part2Answer);
         }
