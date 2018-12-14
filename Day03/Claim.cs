@@ -13,7 +13,15 @@ namespace Day03
         int Y { get; set; }
         int Width { get; set; }
         int Height { get; set; }
-        public (int X, int Y)[] Coords { get; set; }
+        //public IEnumerable<(int X, int Y)> Coords => Enumerable
+        //        .Range(0, Width)
+        //        .SelectMany(i => Enumerable
+        //            .Range(0, Height)
+        //            .Select(j => (X: i + X, Y: j + Y)));
+        public IEnumerable<(int X, int Y)> Coords => 
+                from i in Enumerable.Range(0, Width)
+                from j in Enumerable.Range(0, Height)
+                select (X: i + X, Y: j + Y);                //using LINQ query syntax.
 
         public Claim(string claim)
         {
@@ -24,19 +32,11 @@ namespace Day03
             Y =         int.Parse(claimParts[2]);
             Width =     int.Parse(claimParts[3]);
             Height =    int.Parse(claimParts[4]);
-        }
-                
-        public void ApplyToFabric(Dictionary<(int X, int Y), (int ct, List<int> ids)> fabric)
-        {
-            var points = Enumerable
-                .Range(0, Width)
-                .SelectMany(i => Enumerable
-                    .Range(0, Height)
-                    .Select(j => (X: i + X, Y: j + Y)));
+        }        
 
-            Coords = points.ToArray();
-            
-            foreach (var point in points)
+        public void ApplyToFabric(Dictionary<(int X, int Y), (int ct, List<int> ids)> fabric)
+        {            
+            foreach (var point in Coords)
             {
                 if (fabric.TryGetValue(point, out (int ct, List<int> ids) claimsCoveringPoint))
                 {

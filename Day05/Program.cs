@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.IO;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace Day05
 {
@@ -27,7 +29,13 @@ namespace Day05
             //Part 2 - works but takes a while
             Debug.Assert(OptimalCharacterRemovalRemainingUnitsLength("dabAcCaCBAcCcaDA") == 4);
 
+            var stopwatch = new Stopwatch();
+
+            stopwatch.Start();
             Console.WriteLine("Answer to part 2: " + OptimalCharacterRemovalRemainingUnitsLength(myInput));
+            stopwatch.Stop();
+
+            Console.WriteLine(stopwatch.Elapsed);
         }
 
         static string ApplyReactions(string input)
@@ -41,7 +49,7 @@ namespace Day05
                 if (Math.Abs(output[i] - output[i + 1]) == 32)
                 {
                     output = output.Remove(i, 2);
-                    i = 0;
+                    if (!(i == 0)) { i--; };
                 }
                 else
                 {
@@ -54,7 +62,6 @@ namespace Day05
             }
 
             return output;
-
         }
 
         static int CalculateRemainingUnits(string input)
@@ -68,14 +75,14 @@ namespace Day05
         {
             var distinctCharacters = input.ToUpperInvariant().Distinct();
             var distinctCharactersAsStrings = distinctCharacters.Select(x => x.ToString());
-            var listOfLengths = new List<int>();
-            
-            foreach (var distinctCharacter in distinctCharactersAsStrings)
+            var listOfLengths = new ConcurrentBag<int>();
+
+            Parallel.ForEach(distinctCharactersAsStrings, distinctCharacter =>
             {
                 string output = input.Replace(distinctCharacter, "", true, System.Globalization.CultureInfo.InvariantCulture);
 
                 listOfLengths.Add(CalculateRemainingUnits(output));
-            }
+            });
 
             return listOfLengths.Min();
         }
