@@ -13,11 +13,74 @@ namespace Day07
         {
             var testInput = File.ReadAllLines(@"C:\_Projects\Training\AdventOfCode\2018\Day07\testInput.txt");
             var actualInput = File.ReadAllLines(@"C:\_Projects\Training\AdventOfCode\2018\Day07\input.txt");
-                        
+            
+            //Part 1
             Debug.Assert(CalculateOrder(testInput) == "CABDFE");
 
             Console.WriteLine(CalculateOrder(actualInput));
 
+            ////Part 2
+            Debug.Assert(TimeToComplete(testInput, 2, 0) == 15);
+
+            Console.WriteLine(TimeToComplete(actualInput, 5, 60));
+
+            char x = (char)90;
+            Console.WriteLine(x);
+
+        }
+
+        static int TimeToComplete(string[] input, int numberOfWorkers, int stepDurationOffset)
+        {
+            var workers = new List<Dictionary<int, char?>>();
+            workers.Capacity = numberOfWorkers;
+
+            var stepDurations = new Dictionary<char, int>();
+
+            for (int i = 0; i < 26; i++)
+            {
+                stepDurations.Add((char)(65 + i), i + 61);
+            }
+
+            List<Queue<char>> myList = ParseInput(input);
+            var availableSteps = new SortedDictionary<char, int>();
+
+            var firstLetters = myList.Select(o => o.First()).ToHashSet();
+            var lastLetters = myList.Select(o => o.Last()).ToHashSet();
+            var numberOfDistinct = firstLetters.Union(lastLetters).Count();
+            var firstStepCandidates = firstLetters.Where(letter => !lastLetters.Contains(letter)).ToList();
+            var completedSteps = new List<char>();
+
+            foreach (var step in firstStepCandidates)
+            {
+                availableSteps.Add(step, stepDurations[step]);
+            }
+
+            int ticker = 0;
+
+            while (completedSteps.Count != numberOfDistinct)
+            {
+                foreach (var step in availableSteps)
+                {
+                    if (workers.Count(worker => !worker.ContainsKey(ticker)) > 0 && step.Value != 0)
+                    {
+                        workers.Where(worker => !worker.ContainsKey(ticker)).First().Add(ticker, step.Key);
+                        availableSteps[step.Key]--;
+                    }
+                }
+
+                foreach (var step in availableSteps)
+                {
+                    if (step.Value == 0)
+                    {
+                        completedSteps.Add(step.Key);
+                        availableSteps.Remove(step.Key);
+                    }
+                }
+
+                ticker++;
+            }
+
+            return ticker;
         }
 
         static string CalculateOrder(string[] input)
