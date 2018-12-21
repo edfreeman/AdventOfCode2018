@@ -24,21 +24,23 @@ namespace Day07
 
             Console.WriteLine(TimeToComplete(actualInput, 5, 60));
 
-            char x = (char)90;
-            Console.WriteLine(x);
 
         }
 
         static int TimeToComplete(string[] input, int numberOfWorkers, int stepDurationOffset)
         {
-            var workers = new List<Dictionary<int, char?>>();
-            workers.Capacity = numberOfWorkers;
+            var workers = new List<Dictionary<int, char>>();
+
+            for (int i = 0; i < numberOfWorkers; i++)
+            {
+                workers.Add(new Dictionary<int, char>() { {-1, '\0' } });
+            }            
 
             var stepDurations = new Dictionary<char, int>();
 
             for (int i = 0; i < 26; i++)
             {
-                stepDurations.Add((char)(65 + i), i + 61);
+                stepDurations.Add((char)(65 + i), i + 1 + stepDurationOffset);
             }
 
             List<Queue<char>> myList = ParseInput(input);
@@ -56,24 +58,55 @@ namespace Day07
             }
 
             int ticker = 0;
+            var stepsInProgress = new Dictionary<char, int>();
 
             while (completedSteps.Count != numberOfDistinct)
             {
-                foreach (var step in availableSteps)
+                //Add steps to stepsInProgress if there are: 1. Available steps, 2. Available workers
+                while (availableSteps.Count > 0 && stepsInProgress.Count <= numberOfWorkers)
                 {
-                    if (workers.Count(worker => !worker.ContainsKey(ticker)) > 0 && step.Value != 0)
+                    var key = availableSteps.First().Key;
+                    var value = availableSteps.First().Value;
+                    stepsInProgress.Add(key, value);
+                    availableSteps.Remove(key);
+                }
+
+                for (int j = 0; j < stepsInProgress.Count; j++)
+                {
+                    var currentStep = stepsInProgress.ElementAt(j);
+
+                    if (workers.Count(worker => worker.Values.Last() == currentStep.Key) == 1)
                     {
-                        workers.Where(worker => !worker.ContainsKey(ticker)).First().Add(ticker, step.Key);
-                        availableSteps[step.Key]--;
+                        workers.Where(worker => worker.Values.Last() == currentStep.Key).First().Add(ticker, currentStep.Key);
+                        stepsInProgress[currentStep.Key]--;
+                        continue;
+                    }
+
+                    if (workers.Count(worker => !worker.ContainsKey(ticker)) > 0)
+                    {
+                        workers.Where(worker => !worker.ContainsKey(ticker) && !stepsInProgress.ContainsKey(worker.Values.Last())).First().Add(ticker, currentStep.Key);
+                        stepsInProgress[currentStep.Key]--;
                     }
                 }
 
-                foreach (var step in availableSteps)
+                var removeableSteps = stepsInProgress.Where(step => step.Value == 0).ToList();
+
+                foreach (var step in removeableSteps)
                 {
-                    if (step.Value == 0)
+                    completedSteps.Add(step.Key);
+                    stepsInProgress.Remove(step.Key);
+
+                    foreach (var queue in myList)
                     {
-                        completedSteps.Add(step.Key);
-                        availableSteps.Remove(step.Key);
+                        if (queue.First() == step.Key && queue.Count == 2)
+                        {
+                            if (myList.Where(x => x.Count == 2).Where(o => o.Last() == queue.Last()).Count() == 1)
+                            {
+                                availableSteps.Add(queue.Last(), stepDurations[queue.Last()]);
+                            }
+
+                            queue.Dequeue();
+                        }
                     }
                 }
 
