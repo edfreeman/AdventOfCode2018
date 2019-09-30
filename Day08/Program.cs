@@ -17,15 +17,14 @@ namespace Day08
 
             //Part 1
 
-            //var input1Tree = CreateTree(testInput1);
+            var input1Tree = CreateTree(testInput1);
             var input2Tree = CreateTree(testInput2);
             var actualInputTree = CreateTree(actualInputParsed);
 
-            //Debug.Assert(CalculateMetadataSum(input1Tree) == 37);
+            Debug.Assert(CalculateMetadataSum(input1Tree) == 37);
             Debug.Assert(CalculateMetadataSum(input2Tree) == 138);
 
             Console.WriteLine(CalculateMetadataSum(actualInputTree));
-
         }
 
         static int CalculateMetadataSum(List<(int id, int parentId, int numberOfSubtrees, int numberOfMetadataEntries, List<int> metadataEntries)> tree)
