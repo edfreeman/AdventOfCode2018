@@ -12,122 +12,102 @@ namespace Day08
         {
             var testInput1 = new List<int> { 1, 3, 0, 3, 10, 11, 12, 1, 1, 2 };
             var testInput2 = new List<int> { 2, 3, 0, 3, 10, 11, 12, 1, 1, 0, 1, 99, 2, 1, 1, 2 };
-            var actualInput = File.ReadAllText(@"C:\_Projects\Training\AdventOfCode\2018\Day08\input.txt");
+            var actualInput = File.ReadAllText(@"C:\_Projects\Training\AdventOfCode2018\Day08\input.txt");
             var actualInputParsed = ParseInput(actualInput);
 
-
             //Part 1
-            Debug.Assert(CalculateMetadataSum(testInput1) == 37);
-            Debug.Assert(CalculateMetadataSum(testInput2) == 138);
 
-            Console.WriteLine(CalculateMetadataSum(actualInputParsed));
+            //var input1Tree = CreateTree(testInput1);
+            var input2Tree = CreateTree(testInput2);
+            var actualInputTree = CreateTree(actualInputParsed);
+
+            //Debug.Assert(CalculateMetadataSum(input1Tree) == 37);
+            Debug.Assert(CalculateMetadataSum(input2Tree) == 138);
+
+            Console.WriteLine(CalculateMetadataSum(actualInputTree));
 
         }
 
-        static int CalculateMetadataSum(List<int> input)
+        static int CalculateMetadataSum(List<(int id, int parentId, int numberOfSubtrees, int numberOfMetadataEntries, List<int> metadataEntries)> tree)
         {
-            var listOfPairs = new List<(int numberOfSubtrees, int numberOfMetadataEntries)>();
-
-            bool remainingNodes = true;
-            int sum = 0;
-            int i = 0;
-            //{ 2, 3, 0, 3, 10, 11, 12, 1, 1, 0, 1, 99, 2, 1, 1, 2 }
-
-            while (remainingNodes)
-            {
-                if (input[i] != 0)
-                {
-                    listOfPairs.Add((input[i], input[i + 1]));
-                    i += 2;
-                    continue;
-                }
-
-                else
-                {
-                    var (numberOfSubtrees, numberOfMetadataEntries) = listOfPairs[listOfPairs.Count - 1];
-                    listOfPairs[listOfPairs.Count - 1] = (numberOfSubtrees - 1, numberOfMetadataEntries); //why doesn't numberOfSubtrees-- work?
-
-                    int step = input[i + 1];
-                    i += 2;
-
-                    for (int j = i; j < i + step; j++)
-                    {
-                        sum += input[j];
-                    }
-
-
-                    i += step;
-                }
-
-                //{ 1, 3, 0, 3, 10, 11, 12, 1, 1, 2 }
-                while (listOfPairs.Last().numberOfSubtrees == 0)
-                {
-                    int x = listOfPairs.Last().numberOfMetadataEntries;
-                    for (int k = i; k < i + x; k++)
-                    {
-                        sum += input[k];
-                    }
-                    listOfPairs.Remove(listOfPairs.Last());
-
-                    if (listOfPairs.Count > 0)
-                    {
-                        var (numberOfSubtrees, numberOfMetadataEntries) = listOfPairs[listOfPairs.Count - 1];
-                        listOfPairs[listOfPairs.Count - 1] = (numberOfSubtrees - 1, numberOfMetadataEntries);
-
-                        i += x;
-                    }
-                    else
-                    {
-                        remainingNodes = false;
-                        break;
-                    }
-                }                
-            }
+            int sum = tree.SelectMany(o => o.metadataEntries).Sum();
             
             return sum;
         }
 
-        static List<(int id, int parentId, int numberOfSubtrees, int numberOfMetadataEntries,List<int> metadataEntries)> CreateTree(List<int> input)
+        static List<(int id, int parentId, int numberOfSubtrees, int numberOfMetadataEntries, List<int> metadataEntries)> CreateTree(List<int> input)
         {
             var tree = new List<(int id, int parentId, int numberOfSubtrees, int numberOfMetadataEntries, List<int> metadataEntries)>();
-            var remainingSubtrees = new List<int>();
+            var remainingSubtrees = new Dictionary<int,int>();
+            int endIndex = input.Count - input[1];
 
             bool endOfTree = false;
-            int i = 0;
-            int j = 0;
-            var parentIds = new List<int>() { { -1 } };
+            int positionIndex = 0;
+            int idIndex = 1;
+            var parentIds = new List<int>();
 
             while (!endOfTree)
             {
+                if (idIndex == 1)
+                {
+                    tree.Add((idIndex, 0, input[positionIndex], input[positionIndex + 1], input.TakeLast(input[1]).ToList()));
+                    remainingSubtrees.Add(idIndex, input[0]);
+                    parentIds.Add(1);
+                    positionIndex = 2;
+                    idIndex++;
+                }
+                //{ 1, 3, 0, 3, 10, 11, 12, 1, 1, 2 }
                 //{ 2, 3, 0, 3, 10, 11, 12, 1, 1, 0, 1, 99, 2, 1, 1, 2 }
-                if (input[i] != 0)
+                if (input[positionIndex] != 0)
                 {
                     var metadata = new List<int>();
-                    tree.Add((j, parentIds.Last(), input[i], input[i + 1], metadata));
-                    if(remainingSubtrees.Count > 0)
-                    {
-                        remainingSubtrees[remainingSubtrees.Count - 1]--;// = remainingSubtrees[remainingSubtrees.Count - 1] - 1;
-                    }
-                    remainingSubtrees.Add(input[i]);
-                    parentIds.Add(j);
-                    i += 2;
-                    j++;
+                    tree.Add((idIndex, remainingSubtrees.Last().Key, input[positionIndex], input[positionIndex + 1], metadata));
+                    
+                    remainingSubtrees.Add(idIndex, input[positionIndex]);
+                    parentIds.Add(idIndex);
+                    positionIndex += 2;
+                    idIndex++;
                 }
                 else
                 {
                     var metadata = new List<int>();
 
-                    for (int k = 0; k < input[i+1]; k++)
+                    for (int metadataCounter = 0; metadataCounter < input[positionIndex+1]; metadataCounter++)
                     {
-                        metadata.Add(i + k + 2);
+                        metadata.Add(input[positionIndex + metadataCounter + 2]);
                     }
 
-                    tree.Add((j, parentIds.Last(), input[i], input[i + 1], metadata));
-                    parentIds.Add(j);
-                    i += input[i+1] + 2;
-                    j++;
+                    tree.Add((idIndex, remainingSubtrees.Last().Key, input[positionIndex], input[positionIndex + 1], metadata));
+                    positionIndex += input[positionIndex + 1] + 2;
+                    idIndex++;
+                    int parent = remainingSubtrees.Last().Key;
+                    remainingSubtrees[parent]--;
 
-                    if 
+                    //{ 1, 3, 0, 3, 10, 11, 12, 1, 1, 2 }
+                    //{ 2, 3, 0, 3, 10, 11, 12, 1, 1, 0, 1, 99, 2, 1, 1, 2 }
+
+                    while (remainingSubtrees[parent] == 0)
+                    {
+                        remainingSubtrees.Remove(parent);
+
+                        var treeForParent = tree.First(node => node.id == parent);
+
+                        treeForParent.metadataEntries.AddRange(input.GetRange(positionIndex, treeForParent.numberOfMetadataEntries));
+
+                        positionIndex += treeForParent.numberOfMetadataEntries;
+
+                        if (remainingSubtrees.Count == 0 || positionIndex == endIndex)
+                        {
+                            endOfTree = true;
+                            break;
+                        }
+                        else
+                        {
+                            remainingSubtrees[treeForParent.parentId]--;
+
+                            parent = treeForParent.parentId;
+                        }                        
+                    }
                 }
             }
 
